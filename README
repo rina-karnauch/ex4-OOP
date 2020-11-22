@@ -1,0 +1,189 @@
+rina.karnauch
+
+
+
+=============================
+=      File description     =
+=============================
+SimpleHashSet.java - abstract superclass which implements the SimpleSet interface which and represents several
+hash tables with different hash functions.
+OpenHashSet.java - sub class of SimpleHashSet abstract class, a hash table described by "open hashing" aka
+the collisions are handled with linked lists, and the size is interchangeable according to the load factor of the
+current table state.
+ClosedHashSet.java - sub class of SimpleHashSet abstract class, a hash table described by "closed hashing" aka
+the collisions are handled with quadratic repetitive hashing, and the size is interchangeable according to the load
+factor of the current table state.
+CollectionFacadeSet.java - a facade which represents a wrapper for our collection of strings and implements our basic
+SimpleSet actions, represents our own implementation of a set.
+SimpleSetPerformanceAnalyzer.java - a test class to test performances of times on several collections which each
+implements the simpleSet interface and checks run time according to different actions and scenarios.
+=============================
+=          Design           =
+=============================
+- The openHashSet and CloseHashSet are both implemented as a subclass of the superclass SimpleHashSet
+which implements the SimpleSet interface, and represents a hash table implemented by different collections
+which implement the same interface.
+- The SimpleHashSet is an abstract class because the implementations of hash tables might vary and they all
+have a different kind of handling hashing methods, but all hold similar requirements per adding, deleting and
+containing and resizing- all handled with different methods yet all are available common methods.
+The abstract class represents the extensibility design idea- we could add more hashing sets types which will
+extend the SimpleHashSet superclass
+Also the separation of the both different hashing methods(open & close) represents the intuitiveness and
+understandability.
+The code is also Modular because if we find out that one hash table is less efficient than another,
+we could improve it by changing only the current wanted subclass, or create new much more efficient kind
+of hash table- which is faster.
+- The openHashSet contains a wrapped up nested class of a LinkedList<String> which allows us to
+create an array of linked list of strings, which we could not do due instructions.
+The nesting and the wrapper allows us to keep the minimal API and hidden information design idea.
+- SimpleSetPerformanceAnalyzer is a test object we created as a class, it contains several kinds of
+fields which keep our kinds of wanted collections to check, our constants for the testings, and the array
+which holds our data structure we would like to check.
+The field "collectionsToTest" holds the names given to the data structures set as constants, and according
+to the field we initialize the wanted structures.
+- CollectionFacadeSet comes to our help in the SimpleSetPerformanceAnalyzer- we can not keep the collections
+in one array as they are, so we wrap them up as a collection which holds strings, hide with minimality
+the implementations and allow ourself to hold them in one array due to the fact they all implement the SimpleSet
+interface. The facade allows us modularity with checking and comparing different simple sets in one container(the array)
+and is intuitively built because they are implement the same interface- SimpleSet- all in some other kind of their way.
+=============================
+=  Implementation Details   =
+=============================
+OpenHashSet, CloseHashSet will be discusses in the next section- "Given Questions To Answer". CollectionFacadeSet and
+SimpleSetPerformanceAnalyzer shall be discussed here.
+- SimpleSetPerformanceAnalyzer is a class for testing our wanted simpleSets, therefore it hold an array
+  of a simpleSet wrapper- CollectionFacadeSet.
+- CollectionFacadeSet's job is to implement SimpleSet and hide the wanted object's implementation- and create
+  a common type of sets we could test and compare.
+  it is done by holding a field of a collection of string- each one of our data structure is indeed a collection, and
+  they all hold and implement the same methods from SimpleSet, which are required.
+- The facade helps us hold different structures all together in an array and hold them together, and mostly implements
+  the interface's needed methods, which helps us use our collections in need of a specific action from them, and allows
+  us to refer to it a simpleSet rather than a different kind of data structure- that way we relate to each different
+  data  structure which implements simpleSet as similarities.
+- The class SimpleSetPerformanceAnalyzer holds its testing constant values, and is mostly made of methods and a main-
+  the main exports our kind of wanted tests - addTest to data structure, which add values from given array of file
+  words, one by one and checks its time for each of the wanted values to check, and containTest- which receives a wanted
+  checked string, and checks for its existence. The methods are basically little sections of each test, for example-
+  initializing our structures with a specific data file- to test a specific data file afterwards, or a function to add
+  all words from file one by one or run tests with warm up or no warm up- the sections and small methods help our
+  understandability of the code and the order of actions in each test.
+===============================
+=  Given Questions To Answer  =
+===============================
+1. Implementation of the OpenHashSet -
+--------------------------------------
+- OpenHashSet is the conventional known hash table for us from the DAST course- array of linked lists.
+  Since we can not include an array of linked list, i designed a nested class wrapper of a linked list of strings, so
+  we could create an array of such. The nested class extends from LinkedList<String> and is main job is to wrap up our
+  linked list so we could create an array- and make our operations on it as well, from the extension it holds.
+- OpenHashSet includes an array of the wrapped linked list- collision are handled as add ons to the end of the linked
+  list of the wanted hash index.
+- After filling up the hash table or removing items from it, from time to time we adjust its capacity- we want the table
+  to be filled from 25% to 75%, therefore if we pass our "borders" from below or from above, we adjust accordingly the
+  table size- we cut it by half or make it bigger by half- and rehash all values again.
+- Each rehashing happens one by one for each linked list we construct- so we won't go through a null (empty) linked list
+  in a nested loop, so the job is separated to two working methods- rehash goes to-> rehashLinkedList.
+- Add ons avoid duplicates with checking contained values and not adding if already contained.
+- One more important note is that adjusting happens after removing, or before adding- which is handled by
+  "adjustCapacity" which receives "ACTION" string to indicate what we are doing, and when- we shall not make a table
+  smaller if we are  adding, and quite the opposite with removing.
+2.  Implementation of the deletion mechanism in ClosedHashSet:
+--------------------------------------------------------------
+First of all, while initializing the close hash set
+it holds it's information in an array of strings- therefore after the init, it is set the array
+cells with nulls anywhere- so a null indicates us that the cell has never been "visited".
+It is important to say that it is not possible to loot i's for quadratic probing more than the
+capacity itself, we shall hold that in mind.
+The capacity super field will help us know how many times at most we need to look for a new hash
+index while looking for a value and if it is contained inside the hash table or not, and when
+deleting as well- it is pointless to lot a new i' while looking for a contained hashCode if we
+haven't reached such "high" i' index while adding values and looting hash indexes.
+First of all, search for the existence of the value inside the hash table with an helper function-
+searchIndex- which returns us the existing index of the wanted string value, or -1 (NOT_CONTAINED)
+for a none exiting value.
+EXPLANATION OF SEARCHINDEX'S JOB:
+---------------------------------
+first of all if the value is null, it is pointless to look for- none existing, so we return. We go through a loop as
+much times as much as we maximally looted a new i' for the quadratic probing.
+I calculate the needed hash code, and start looking for it- we have several options.
+1. value is null- the hash code has never been initialized(reached by our hashing function) therefore the value is not
+contained in the data structure- useless to go on, we return -1 because it was not found therefore not existing,
+2. value is not null and is the wanted value- we reached the wanted value, we can return it's index.
+3. value is "DELETE_STRING"- it is the default else, we should just go on- we might have deleted
+a same hash code value and never reached the current wanted value- so we continue looping.
+If we have reached the highest loop counter and haven't found our value and never stopped-
+we would kow that the value is not inside, because we never looted with such an high i value for a
+quadratic probe, and never found it- therefore it is not there, so we return -1 by default-
+because it was not found.
+GOING BACK TO DELETION:
+-----------------------
+If we reached a -1 with our searchIndex function, we haven't found the value- we return false, it is not existing inside
+our hash table.
+If we found it- we delete it with indicating it as a "DELETE_STRING" which is a constant string which indicates for a
+deleted value and checked by references to know its actually a deleted value, and according to the current capacity we
+adjust the table, and return true.
+3.Discuss the results of the analysis in depth:
+3.1. the time it took to initialize each data structures with data1.txt in depth:
+---------------------------------------------------------------------------------
+First of all we know that in data1.txt all the values hold the same hashcode- which indicates that there would be
+constant collisions one after one- which in each data structure are taken care of differently, therefore we have
+different bad run time reasons.
+a. OpenHashSet: collisions are handled by linked lists. As we know linked lists are not efficient with searching
+    run time, and here we have collision O(n) times, the amount of values we are holding- therefore
+    look up time is long- because all is in one hash index, and search is all over the linked list.
+    Deleting and Adding is also effected by the linked list's length, therefore because we have
+    collisions in the same index all the time because of the same hash codes, we constantly
+    run on the long linked list, which effects run time badly.
+IMPORTANT NOTE: we also see that openHashSet has the same runtime with such a file as a linked
+                list, and its behavior behind the implementation is just as a one linked list-
+                because its all contained in one hash index in our table- as a linked list.
+b. ClosedHashSet: collisions are handled with quadratic probing- looting higher hash codes with higher i' amounts
+    per loop of looting. even though trying and making it efficient and not running on look ups
+    for more time than we looted- it is not possible here to make it efficient with such a technique
+    because everything is always with the same hash code in data1.txt file, which indicates that
+    each insertion we make the highest looting i index higher- because each time we look higher.
+    Deleting, containing and adding are effected by those collisions and the highest looting value,
+    which because of the constant collisions make it inefficient.
+    It is important to say that such kind of file-data1.txt is a "bad file", which in the expectation is not supposed
+    to be received- so run time is highly effected by this "malice" file and performance is not as expected in the
+    expectation and theory.
+3.2. Summarize the strengths and weaknesses of each of the data structures as reflected by
+     the results. Which would you use for which purposes?:
+-------------------------------------------------------------------------------------------
+a. OpenHashSet- good for contains with no collisions, and for adding with no collisions, but collisions
+    are handled poorly which might make it work just like a linked list in a collision prone files.
+    Might use for a none prone collision file, but will prefer hashSet because we could never know
+    the actual hash codes and functions for our words in files.
+    Added to the runtime weakness compare to HashSet and TreeSet, no order or duplicates are available,
+    therefore its a weakness as well.
+b. CloseHashSet- not efficient, the only strength i might say is it lives up to OpenHashSet with none prone collision
+    files. Mostly the slowest, just above linkedList.
+    Will not use, would prefer OpenHashSet instead if java simple sets are not available.
+    Added to the runtime weakness compare to HashSet and TreeSet, no order or duplicates are available,
+    therefore its a weakness as well.
+c. TreeSet-  the second more efficient data structure we checked. Strengths are not like hashSet's but also
+    efficient than others in most collision tests, so if hashSet is not available would use.
+    might be weakness if we would want to hold duplicates, or if we would like an internal order.
+    d. LinkedList- not efficient and slow, might use for sorting and such kind of tasks but not for containing
+    information for the hold of it rather than it's order.
+e. HashSet- the strength usually overcomes all other strength in each scenario, contains and add are both
+    efficient even while receiving a malicious file aka a file prone to collisions.
+    Couldn't find a lack at work, might be weakness if we would want to hold duplicates, or if
+    we would like an internal order.
+    Probably will use this data structure if efficiency is needed in next projects.
+
+3.3. How did your two implementations compare between themselves?
+-----------------------------------------------------------------
+The close hash set was way slower, i guess because of the contain checks i did inside adding elements.
+
+3.4. did your implementations compare to Java’s built in HashSet?
+-----------------------------------------------------------------
+HashSet is way faster than both of the hash tables i implemented- guess java knows what they are doing.
+
+3.5. Did you find java’s HashSet performance on data1.txt surprising? Can you explain it?
+-----------------------------------------------------------------------------------------
+I did expect HashSet by java to be efficient with data1.txt, but not that efficient, it really did surprise me.
+Thanks to google i grow up know that hashMap deals with collisions with binary self balanced trees- which makes
+loop up after collisions way more efficient than a linked list- O(log(n)) vs O(n), since java 8, so i figured out
+why the difference is such a bold on.
